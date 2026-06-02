@@ -1,0 +1,46 @@
+version: "3.9"
+services:
+  app:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - AWS_ENDPOINT_URL=http://localstack:4566
+      - AWS_ACCESS_KEY_ID=test
+      - AWS_SECRET_ACCESS_KEY=test
+      - AWS_DEFAULT_REGION=us-east-1
+      - ENVIRONMENT=development
+      - LOG_LEVEL=DEBUG
+      - REPORTS_BUCKET=dev-llm-security-reports
+      - RESULTS_TABLE=llm-security-results
+    depends_on:
+      localstack:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  localstack:
+    image: localstack/localstack:3.0
+    ports:
+      - "4566:4566"
+    environment:
+      - SERVICES=s3,dynamodb,sqs,sns,secretsmanager,events,cloudwatch,ssm,iam
+      - PERSISTENCE=1
+    volumes:
+      - localstack_data:/var/lib/localstack
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./infra/localstack_init.sh:/etc/localstack/init/ready.d/init.sh
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4566/_localstack/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+volumes:
+  localstack_data:

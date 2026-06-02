@@ -1,0 +1,10 @@
+{
+  "app": "python3 app.py",
+  "context": {
+    "account": "REPLACE_WITH_YOUR_AWS_ACCOUNT_ID",
+    "region": "us-east-1",
+    "github_owner": "Zi-Stonga",
+    "github_repo": "LLM-Security-Framework",
+    "codestar_connection_arn": "REPLACE_WITH_CODESTAR_CONNECTION_ARN"
+  }
+}

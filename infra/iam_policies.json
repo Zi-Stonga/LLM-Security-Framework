@@ -1,0 +1,73 @@
+{
+  "_comment": "Least-privilege IAM policies. Replace ACCOUNT_ID, REGION, and KMS_KEY_ID before deploying.",
+  "LambdaRunnerPolicy": {
+    "Version": "2012-10-17",
+    "Statement": [
+      {
+        "Sid": "S3ReportsReadWrite",
+        "Effect": "Allow",
+        "Action": ["s3:PutObject", "s3:GetObject", "s3:ListBucket"],
+        "Resource": [
+          "arn:aws:s3:::llm-security-reports-ACCOUNT_ID",
+          "arn:aws:s3:::llm-security-reports-ACCOUNT_ID/reports/*"
+        ]
+      },
+      {
+        "Sid": "DynamoDBResultsReadWrite",
+        "Effect": "Allow",
+        "Action": [
+          "dynamodb:PutItem",
+          "dynamodb:GetItem",
+          "dynamodb:UpdateItem",
+          "dynamodb:Query"
+        ],
+        "Resource": "arn:aws:dynamodb:REGION:ACCOUNT_ID:table/llm-security-results"
+      },
+      {
+        "Sid": "SecretsManagerReadApiKey",
+        "Effect": "Allow",
+        "Action": ["secretsmanager:GetSecretValue"],
+        "Resource": "arn:aws:secretsmanager:REGION:ACCOUNT_ID:secret:security-testing/anthropic-api-key-*"
+      },
+      {
+        "Sid": "KMSEncryptDecrypt",
+        "Effect": "Allow",
+        "Action": [
+          "kms:Decrypt",
+          "kms:Encrypt",
+          "kms:GenerateDataKey",
+          "kms:DescribeKey"
+        ],
+        "Resource": "arn:aws:kms:REGION:ACCOUNT_ID:key/KMS_KEY_ID"
+      },
+      {
+        "Sid": "CloudWatchLogsWrite",
+        "Effect": "Allow",
+        "Action": [
+          "logs:CreateLogGroup",
+          "logs:CreateLogStream",
+          "logs:PutLogEvents"
+        ],
+        "Resource": "arn:aws:logs:REGION:ACCOUNT_ID:log-group:/aws/lambda/llm-security-test-runner:*"
+      },
+      {
+        "Sid": "DenyDangerousActions",
+        "Effect": "Deny",
+        "Action": [
+          "iam:*",
+          "ec2:*",
+          "s3:DeleteBucket",
+          "s3:DeleteObject",
+          "dynamodb:DeleteTable",
+          "secretsmanager:DeleteSecret",
+          "kms:DeleteImportedKeyMaterial",
+          "kms:ScheduleKeyDeletion",
+          "lambda:DeleteFunction",
+          "lambda:AddPermission",
+          "lambda:RemovePermission"
+        ],
+        "Resource": "*"
+      }
+    ]
+  }
+}
